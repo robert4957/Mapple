@@ -1,0 +1,19 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+#canvas {
+  border: solid 2px green;
+  width: 720px;
+  height: 470px;
+  display: block;
+  margin: 0 auto;
+}
+p {
+  width: 720px;
+  margin: 0 auto;
+}
+
+img {
+  display: none;
+}
