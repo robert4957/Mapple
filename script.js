@@ -141,17 +141,31 @@ const StartPosition = [130, 138];
 const AppleSeperation = 67;
 
 function createAppleArray() {
-  appleArr.length = 0;
-  for (let y = 0; y < 10; y++) {
-  const row = [];
-  for (let x = 0; x < 17; x++) {
-    const xPos = StartPosition[0] + AppleSeperation * x;
-    const yPos = StartPosition[1] + AppleSeperation * y;
-    const number = Math.floor(Math.random() * 9) + 1;
-    row.push(new Apple(number, xPos, yPos));
+  while (true) {
+    appleArr.length = 0;
+    let sum = 0;
+    for (let y = 0; y < 10; y++) {
+      const row = [];
+      for (let x = 0; x < 17; x++) {
+        const xPos = StartPosition[0] + AppleSeperation * x;
+        const yPos = StartPosition[1] + AppleSeperation * y;
+        let number = Math.floor(Math.random() * 9) + 1;
+        if (y === 9 && x === 16) { // Last apple
+          number = 10 - sum % 10;
+          console.log(sum);
+        }
+        row.push(new Apple(number, xPos, yPos));
+        sum += number;
+      }
+      appleArr.push(row);
+    }
+    if (appleArr[9][16].number !== 10) {
+      console.log(sum);
+      break;
+    } else {
+      console.log("10 end")
+    }
   }
-  appleArr.push(row);
-}
 }
 
 
