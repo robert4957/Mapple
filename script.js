@@ -1,4 +1,5 @@
 const AppleSize = 55;
+let score = 0;
 
 // Wait for images to load
 async function loadImages() {
@@ -54,6 +55,7 @@ function checkCollision(remove) {
     if (remove) {
       selectedApples.forEach((apple) => {
         apple.active = false;
+        score++;
       });
     }
     return true;
@@ -129,6 +131,12 @@ function draw(timestamp) {
     }
   }
 
+  // Draw score
+  const scoreWidth = ctx.measureText(`${score}`).width;
+  ctx.direction = "rtl";
+  ctx.fillText(`${score}`, 1440 - 40 + scoreWidth, 40); // 120 for original parity
+  ctx.direction = "ltr";
+
   // Draw selector
   if (selector.draw) {    
     let [selX, selWidth] = (selector.xStart < selector.xEnd) 
@@ -147,6 +155,8 @@ function draw(timestamp) {
     ctx.strokeRect(Math.round(selX) + 0.5, Math.round(selY) + 0.5, Math.round(selWidth), Math.round(selHeight));
     ctx.fillRect(Math.round(selX) + 1, Math.round(selY) + 1, Math.round(selWidth) - 1 , Math.round(selHeight) - 1);
   }
+
+ 
 
   requestAnimationFrame(draw);
 } 
