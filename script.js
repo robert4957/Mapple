@@ -1,7 +1,10 @@
 const AppleSize = 55;
 const CanvasWidth = 1440;
 const CanvasHeight = 940;
+const filter = 780;
+let boardSum = null;
 let score = 0;
+let gameMode = "filtered";
 
 // Wait for images to load
 async function loadImages() {
@@ -40,6 +43,10 @@ function updateSelector(e) {
 }
 
 function checkCollision(remove) {
+  const timePassed = currentTime - startTime;
+  if (timePassed >= 120000) {
+    false;
+  }
   let [xStart, xEnd] = (selector.xStart < selector.xEnd)
   ? [selector.xStart, selector.xEnd]
   : [selector.xEnd, selector.xStart];
@@ -96,12 +103,13 @@ function changeGameState(e) {
     const yPlaybuttonEnd = yPlayButton + 64 + 20;
     const offsetX = e.offsetX * scaleX;
     const offsetY = e.offsetY * scaleY
+    ctx.font = "bold 36px \"Times New Roman\"";
   if (!inGame) {
-    ctx.font = "bold 36px \"Times New Roman\""
     if (offsetX >= xPlayButton && offsetX <= xPlayButtonEnd && offsetY >= yPlayButton && offsetY <= yPlaybuttonEnd) {
       createAppleArray();
       inGame = true;
       startTime = Date.now();
+      score = 0;
     }
   } else {
     // 110, CanvasHeight - 55, 95, 40
@@ -141,6 +149,7 @@ const StartPosition = [130, 138];
 const AppleSeperation = 67;
 
 function createAppleArray() {
+  console.log(gameMode);
   while (true) {
     appleArr.length = 0;
     let sum = 0;
@@ -152,7 +161,7 @@ function createAppleArray() {
         let number = Math.floor(Math.random() * 9) + 1;
         if (y === 9 && x === 16) { // Last apple
           number = 10 - sum % 10;
-          console.log(sum);
+          // console.log(sum);
         }
         row.push(new Apple(number, xPos, yPos));
         sum += number;
@@ -160,16 +169,22 @@ function createAppleArray() {
       appleArr.push(row);
     }
     if (appleArr[9][16].number !== 10) {
-      console.log(sum);
-      break;
-    } else {
-      console.log("10 end")
+      if (gameMode === "classic") {
+        console.log(sum);
+        boardSum = sum;
+        break;
+      } else if (gameMode === "filtered" && sum <= filter) {
+        console.log(sum);
+        boardSum = sum;
+        break;
+      }
     }
   }
 }
 
 
 let startTime = Date.now();
+let currentTime = Date.now();
 let previousTimestamp = null;
 function draw(timestamp) {
   if (!previousTimestamp) {previousTimestamp = timestamp;}
@@ -236,23 +251,27 @@ function draw(timestamp) {
     }
   }
 
+  currentTime = Date.now();
+
   // Draw score
   const scoreWidth = ctx.measureText(`${score}`).width;
   ctx.fillStyle = "rgb(9 204 9)";
   ctx.lineWidth = 2;
-  ctx.fillText(`${score}`, CanvasWidth - 110 - scoreWidth / 2, 110); // 120 for original parity
+  if (currentTime - startTime < 120000) {
+    ctx.fillText(`${score}`, CanvasWidth - 110 - scoreWidth / 2, 110); // 120 for original parity
+  }
   ctx.direction = "ltr";
 
   // Draw timer
   // 18 x 600
-  const currentTime = Date.now();
   const timePassed = currentTime - startTime;
   ctx.strokeStyle = "rgb(9 204 9";
-  ctx.strokeRect(CanvasWidth - 120, 180, 18, 600);
   if (timePassed < 120000) {
+    ctx.strokeRect(CanvasWidth - 120, 180, 18, 600);
     ctx.fillRect(CanvasWidth - 119, 181 + (598 / 120000) * timePassed, 16, 598 - (598 / 120000) * timePassed);
   } else {
-    inGame = false;
+    ctx.fillStyle = "white";
+    ctx.fillText(`Score: ${score} - Board: ${boardSum}`, 122, 40);
   }
 
   // Draw reset button
@@ -266,7 +285,7 @@ function draw(timestamp) {
   
 
   // Draw selector
-  if (selector.draw) {    
+  if (selector.draw && currentTime - startTime <= 120000) {    
     let [selX, selWidth] = (selector.xStart < selector.xEnd) 
     ? [selector.xStart, selector.xEnd - selector.xStart] 
     : [selector.xEnd, selector.xStart - selector.xEnd];
@@ -289,4 +308,25 @@ function draw(timestamp) {
 
 requestAnimationFrame(draw);
 
-console.log("good morning");
+
+// Change game mode
+const button = document.querySelector("#switch");
+const filtered = document.querySelector("#filtered");
+const classic = document.querySelector("#classic");
+filtered.classList.add("selected");
+
+function switchMode() {
+  if (gameMode === "filtered") {
+    filtered.classList.remove("selected");
+    classic.classList.add("selected");
+    gameMode = "classic";
+  } else {
+    classic.classList.remove("selected");
+    filtered.classList.add("selected");
+    gameMode = "filtered";
+  }
+  console.log(`Mode switched to ${gameMode}`);
+}
+
+button.addEventListener("click", switchMode);
+console.log(`Current mode is ${gameMode}`);

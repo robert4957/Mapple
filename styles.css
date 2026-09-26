@@ -16,3 +16,19 @@ p {
 img {
   display: none;
 }
+
+
+.button-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+div {
+  color: gray;
+}
+
+.selected {
+  color: black;
+}
