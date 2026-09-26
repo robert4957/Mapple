@@ -36,7 +36,7 @@ function updateSelector(e) {
   selector.yEnd = e.offsetY * scaleY;
 }
 
-function checkCollision() {
+function checkCollision(remove) {
   let [xStart, xEnd] = (selector.xStart < selector.xEnd)
   ? [selector.xStart, selector.xEnd]
   : [selector.xEnd, selector.xStart];
@@ -45,28 +45,25 @@ function checkCollision() {
   ? [selector.yStart, selector.yEnd]
   : [selector.yEnd, selector.yStart];
 
-  console.log(xStart, xEnd);
-  console.log(yStart, yEnd);
-
-  
-
-
   const selectedApples = appleArr.flat().filter((apple) => apple.xCollision >= xStart && apple.xCollision <= xEnd && apple.yCollision >= yStart && apple.yCollision <= yEnd);
   const sum = selectedApples.reduce((runningSum, apple) => runningSum + apple.number, 0);
 
   console.log(selectedApples);
   
   if (sum === 10) {
-    selectedApples.forEach((apple) => {
-      apple.active = false;
-      console.log(apple)
-    });
+    if (remove) {
+      selectedApples.forEach((apple) => {
+        apple.active = false;
+      });
+    }
+    return true;
   }
+  return false
 }
 
 function removeSelector() {
   // Check if fruit selection sums to 10
-  checkCollision();
+  checkCollision(true);
   selector.draw = false;
   canvas.removeEventListener("mousemove", updateSelector);
   canvas.removeEventListener("mouseup", removeSelector);
@@ -141,12 +138,14 @@ function draw(timestamp) {
     let [selY, selHeight] = (selector.yStart < selector.yEnd) 
     ? [selector.yStart, selector.yEnd - selector.yStart] 
     : [selector.yEnd, selector.yStart - selector.yEnd];
-    ctx.fillStyle = "blue";
     if (selWidth === 0 && selHeight !== 0) selWidth = 1;
     if (selWidth !== 0 && selHeight === 0) selHeight = 1;
 
     ctx.lineWidth = 1;
+    ctx.strokeStyle = "rgb(3, 132, 252)";
+    ctx.fillStyle = checkCollision() ? "rgb(255 0 0 / 40%)" : "rgb(255 180 0 / 30%)";
     ctx.strokeRect(Math.round(selX) + 0.5, Math.round(selY) + 0.5, Math.round(selWidth), Math.round(selHeight));
+    ctx.fillRect(Math.round(selX) + 1, Math.round(selY) + 1, Math.round(selWidth) - 1 , Math.round(selHeight) - 1);
   }
 
   requestAnimationFrame(draw);
