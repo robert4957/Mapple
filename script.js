@@ -132,6 +132,7 @@ function draw(timestamp) {
 
   // Draw fruit grid
   const appleTexture = document.querySelector("#apple");
+  const inactiveFruit = [];
   for (let y = 0; y < 10; y++) {
     for (let x = 0; x < 17; x++) {
       const apple = appleArr[y][x]
@@ -139,22 +140,26 @@ function draw(timestamp) {
         ctx.drawImage(appleTexture, apple.xPos, apple.yPos);
         ctx.fillText(apple.number, apple.xPos + 27 - textWidth / 2, apple.yPos + 33); // Create good constants for this positioning later
       } else if (apple.draw) {
+        inactiveFruit.push(apple);
         apple.yVel += 6000 * dt;
         apple.yPos += apple.yVel * dt;
         apple.xPos += apple.xVel * dt;
-        if (apple.yPos <= CanvasHeight) {
-          ctx.save();
-          ctx.translate(apple.xPos + AppleSize / 2, apple.yPos + AppleSize / 2);
-          apple.angle += apple.spin * dt;
-          console.log(apple.angle)
-          ctx.rotate(apple.angle);
-          ctx.drawImage(appleTexture, -AppleSize / 2, -AppleSize / 2);
-          ctx.fillText(apple.number, -AppleSize / 2 + 27 - textWidth / 2, -AppleSize / 2 + 33);
-          ctx.restore();
-        } else {
-          apple.draw = false;
-        }
       }
+    }
+  }
+  // Draw already selected fruit after so appears on top
+  for (let apple of inactiveFruit) {
+    if (apple.yPos <= CanvasHeight) {
+      ctx.save();
+      ctx.translate(apple.xPos + AppleSize / 2, apple.yPos + AppleSize / 2);
+      apple.angle += apple.spin * dt;
+      console.log(apple.angle)
+      ctx.rotate(apple.angle);
+      ctx.drawImage(appleTexture, -AppleSize / 2, -AppleSize / 2);
+      ctx.fillText(apple.number, -AppleSize / 2 + 27 - textWidth / 2, -AppleSize / 2 + 33);
+      ctx.restore();
+    } else {
+      apple.draw = false;
     }
   }
 
