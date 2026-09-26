@@ -1,4 +1,6 @@
 const AppleSize = 55;
+const CanvasWidth = 1440;
+const CanvasHeight = 940;
 let score = 0;
 
 // Wait for images to load
@@ -46,10 +48,9 @@ function checkCollision(remove) {
   ? [selector.yStart, selector.yEnd]
   : [selector.yEnd, selector.yStart];
 
-  const selectedApples = appleArr.flat().filter((apple) => apple.xCollision >= xStart && apple.xCollision <= xEnd && apple.yCollision >= yStart && apple.yCollision <= yEnd);
+  const selectedApples = appleArr.flat().filter((apple) => apple.active && apple.xCollision >= xStart && apple.xCollision <= xEnd && apple.yCollision >= yStart && apple.yCollision <= yEnd);
   const sum = selectedApples.reduce((runningSum, apple) => runningSum + apple.number, 0);
 
-  console.log(selectedApples);
   
   if (sum === 10) {
     if (remove) {
@@ -93,6 +94,8 @@ class Apple {
     this.yPos = yPos;
     this.xCollision = xPos + AppleSize / 2;
     this.yCollision = yPos + AppleSize / 2;
+    this.xVel = Math.floor(Math.random() * 2001) - 1000;
+    this.yVel = -Math.floor(Math.random() * 1001);
   }
 }
 
@@ -107,7 +110,6 @@ for (let y = 0; y < 10; y++) {
     const yPos = StartPosition[1] + AppleSeperation * y;
     const number = Math.floor(Math.random() * 9) + 1;
     row.push(new Apple(number, xPos, yPos));
-    console.log(row[x].xCollision, row[x].yCollision);
   }
   appleArr.push(row);
 }
@@ -115,6 +117,8 @@ for (let y = 0; y < 10; y++) {
 let previousTimestamp = null;
 function draw(timestamp) {
   if (!previousTimestamp) {previousTimestamp = timestamp;}
+  let dt = (timestamp - previousTimestamp) / 1000;
+  previousTimestamp = timestamp;
   ctx.fillStyle = "white";
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(document.querySelector("#background"), 0, 0);
@@ -127,14 +131,23 @@ function draw(timestamp) {
       if (apple.active) {
         ctx.drawImage(appleTexture, apple.xPos, apple.yPos);
         ctx.fillText(apple.number, apple.xPos + 27 - textWidth / 2, apple.yPos + 33); // Create good constants for this positioning later
+      } else if (apple.draw) {
+        apple.yVel += 5000 * dt;
+        apple.yPos += apple.yVel * dt;
+        apple.xPos += apple.xVel * dt;
+        if (apple.yPos <= CanvasHeight) {
+          ctx.drawImage(appleTexture, apple.xPos, apple.yPos);
+          ctx.fillText(apple.number, apple.xPos + 27 - textWidth / 2, apple.yPos + 33);
+        } else {
+          apple.draw = false;
+        }
       }
     }
   }
 
   // Draw score
   const scoreWidth = ctx.measureText(`${score}`).width;
-  ctx.direction = "rtl";
-  ctx.fillText(`${score}`, 1440 - 40 + scoreWidth, 40); // 120 for original parity
+  ctx.fillText(`${score}`, CanvasWidth - 40 - scoreWidth / 2, 40); // 120 for original parity
   ctx.direction = "ltr";
 
   // Draw selector
