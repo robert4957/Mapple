@@ -54,7 +54,12 @@ function checkCollision(remove) {
   
   if (sum === 10) {
     if (remove) {
+      let previous = null;
       selectedApples.forEach((apple) => {
+        if (previous) {
+          apple.xVel = Math.sign(apple.xVel) === Math.sign(previous.xVel) ? -apple.xVel : apple.xVel;
+        }
+        previous = apple;
         apple.active = false;
         score++;
       });
@@ -94,8 +99,8 @@ class Apple {
     this.yPos = yPos;
     this.xCollision = xPos + AppleSize / 2;
     this.yCollision = yPos + AppleSize / 2;
-    this.xVel = Math.floor(Math.random() * 4001) - 2000;
-    this.yVel = -Math.floor(Math.random() * 2001);
+    this.xVel = Math.floor(Math.random() * 3001) - 1500;
+    this.yVel = -Math.floor(Math.random() * 1001) - 500;
     this.spin = this.xVel / 100;
     this.angle = 0;
   }
@@ -134,7 +139,7 @@ function draw(timestamp) {
         ctx.drawImage(appleTexture, apple.xPos, apple.yPos);
         ctx.fillText(apple.number, apple.xPos + 27 - textWidth / 2, apple.yPos + 33); // Create good constants for this positioning later
       } else if (apple.draw) {
-        apple.yVel += 7000 * dt;
+        apple.yVel += 6000 * dt;
         apple.yPos += apple.yVel * dt;
         apple.xPos += apple.xVel * dt;
         if (apple.yPos <= CanvasHeight) {
