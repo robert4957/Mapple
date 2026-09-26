@@ -24,7 +24,7 @@ let selector = {
   draw: false,
 };
 
-let inGame = true;
+let inGame = false;
 
 function updateSelector(e) {
   // Scaleing because css makes canvas half size
@@ -84,6 +84,35 @@ canvas.addEventListener("mousedown", () => {
   }
 });
 
+function changeGameState(e) {
+  // Scaleing because css makes canvas half size
+    const scaleX = canvas.width / canvas.clientWidth;
+    const scaleY = canvas.height / canvas.clientHeight;
+    ctx.font = "bold 64px \"Times New Roman\""
+    const playWidth = ctx.measureText("Play").width;
+    const xPlayButton = CanvasWidth / 2 - playWidth / 2 - 20;
+    const yPlayButton  = CanvasHeight / 2 - 64 / 2 - 10;
+    const xPlayButtonEnd = xPlayButton + playWidth + 40;
+    const yPlaybuttonEnd = yPlayButton + 64 + 20;
+    const offsetX = e.offsetX * scaleX;
+    const offsetY = e.offsetY * scaleY
+  if (!inGame) {
+    ctx.font = "bold 36px \"Times New Roman\""
+    if (offsetX >= xPlayButton && offsetX <= xPlayButtonEnd && offsetY >= yPlayButton && offsetY <= yPlaybuttonEnd) {
+      createAppleArray();
+      inGame = true;
+      startTime = Date.now();
+    }
+  } else {
+    // 110, CanvasHeight - 55, 95, 40
+    if (offsetX >= 110 && offsetX <= 110 + 95 && offsetY >= CanvasHeight - 55 && offsetY <= CanvasHeight - 55 + 40) {
+      inGame = false;
+    }
+  }
+}
+
+canvas.addEventListener("click", changeGameState);
+
 const ctx = canvas.getContext("2d");
 ctx.font = "bold 36px \"Times New Roman\""
 ctx.textBaseline = "middle";
@@ -110,7 +139,10 @@ class Apple {
 const appleArr = [];
 const StartPosition = [130, 138];
 const AppleSeperation = 67;
-for (let y = 0; y < 10; y++) {
+
+function createAppleArray() {
+  appleArr.length = 0;
+  for (let y = 0; y < 10; y++) {
   const row = [];
   for (let x = 0; x < 17; x++) {
     const xPos = StartPosition[0] + AppleSeperation * x;
@@ -120,7 +152,10 @@ for (let y = 0; y < 10; y++) {
   }
   appleArr.push(row);
 }
+}
 
+
+let startTime = Date.now();
 let previousTimestamp = null;
 function draw(timestamp) {
   if (!previousTimestamp) {previousTimestamp = timestamp;}
@@ -129,6 +164,30 @@ function draw(timestamp) {
   ctx.fillStyle = "white";
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(document.querySelector("#background"), 0, 0);
+
+  if (!inGame) {
+    ctx.fillStyle = "rgb(0 204 102)";
+    ctx.font = "bold 64px \"Times New Roman\""
+    const playWidth = ctx.measureText("Play").width;
+    // PLAY BUTTON
+    const xPlayButton = CanvasWidth / 2 - playWidth / 2 - 20;
+    const yPlayButton  = CanvasHeight / 2 - 64 / 2 - 10;
+    ctx.fillRect(xPlayButton, yPlayButton, playWidth + 40, 64 + 20);
+    ctx.fillStyle = "white";
+    ctx.fillText("Play", CanvasWidth / 2 - playWidth / 2, CanvasHeight / 2);
+    ctx.font = "bold 36px \"Times New Roman\""
+
+    // Draw reset button
+    ctx.strokeStyle = "white";
+    ctx.strokeRect(110, CanvasHeight - 55, 95, 40);
+    ctx.fillStyle = "white";
+    ctx.font = "bold 30px \"Times New Roman\""
+    ctx.fillText("Reset", 122, CanvasHeight - 55 + 22,)
+    ctx.font = "bold 36px \"Times New Roman\""
+
+    requestAnimationFrame(draw);
+    return;
+  }
 
   // Draw fruit grid
   const appleTexture = document.querySelector("#apple");
@@ -165,8 +224,32 @@ function draw(timestamp) {
 
   // Draw score
   const scoreWidth = ctx.measureText(`${score}`).width;
-  ctx.fillText(`${score}`, CanvasWidth - 40 - scoreWidth / 2, 40); // 120 for original parity
+  ctx.fillStyle = "rgb(9 204 9)";
+  ctx.lineWidth = 2;
+  ctx.fillText(`${score}`, CanvasWidth - 110 - scoreWidth / 2, 110); // 120 for original parity
   ctx.direction = "ltr";
+
+  // Draw timer
+  // 18 x 600
+  const currentTime = Date.now();
+  const timePassed = currentTime - startTime;
+  ctx.strokeStyle = "rgb(9 204 9";
+  ctx.strokeRect(CanvasWidth - 120, 180, 18, 600);
+  if (timePassed < 120000) {
+    ctx.fillRect(CanvasWidth - 119, 181 + (598 / 120000) * timePassed, 16, 598 - (598 / 120000) * timePassed);
+  } else {
+    inGame = false;
+  }
+
+  // Draw reset button
+  ctx.strokeStyle = "white";
+  ctx.strokeRect(110, CanvasHeight - 55, 95, 40);
+  ctx.fillStyle = "white";
+  ctx.font = "bold 30px \"Times New Roman\""
+  ctx.fillText("Reset", 122, CanvasHeight - 55 + 22,)
+  ctx.font = "bold 36px \"Times New Roman\""
+
+  
 
   // Draw selector
   if (selector.draw) {    
@@ -179,8 +262,6 @@ function draw(timestamp) {
     : [selector.yEnd, selector.yStart - selector.yEnd];
     if (selWidth === 0 && selHeight !== 0) selWidth = 1;
     if (selWidth !== 0 && selHeight === 0) selHeight = 1;
-
-    ctx.lineWidth = 1;
     ctx.strokeStyle = "rgb(3, 132, 252)";
     ctx.fillStyle = checkCollision() ? "rgb(255 0 0 / 40%)" : "rgb(255 180 0 / 30%)";
     ctx.strokeRect(Math.round(selX) + 0.5, Math.round(selY) + 0.5, Math.round(selWidth), Math.round(selHeight));
@@ -191,5 +272,7 @@ function draw(timestamp) {
 
   requestAnimationFrame(draw);
 } 
+
 requestAnimationFrame(draw);
+
 console.log("good morning");
