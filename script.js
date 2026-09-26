@@ -94,8 +94,10 @@ class Apple {
     this.yPos = yPos;
     this.xCollision = xPos + AppleSize / 2;
     this.yCollision = yPos + AppleSize / 2;
-    this.xVel = Math.floor(Math.random() * 2001) - 1000;
-    this.yVel = -Math.floor(Math.random() * 1001);
+    this.xVel = Math.floor(Math.random() * 4001) - 2000;
+    this.yVel = -Math.floor(Math.random() * 2001);
+    this.spin = this.xVel / 100;
+    this.angle = 0;
   }
 }
 
@@ -132,12 +134,18 @@ function draw(timestamp) {
         ctx.drawImage(appleTexture, apple.xPos, apple.yPos);
         ctx.fillText(apple.number, apple.xPos + 27 - textWidth / 2, apple.yPos + 33); // Create good constants for this positioning later
       } else if (apple.draw) {
-        apple.yVel += 5000 * dt;
+        apple.yVel += 7000 * dt;
         apple.yPos += apple.yVel * dt;
         apple.xPos += apple.xVel * dt;
         if (apple.yPos <= CanvasHeight) {
-          ctx.drawImage(appleTexture, apple.xPos, apple.yPos);
-          ctx.fillText(apple.number, apple.xPos + 27 - textWidth / 2, apple.yPos + 33);
+          ctx.save();
+          ctx.translate(apple.xPos + AppleSize / 2, apple.yPos + AppleSize / 2);
+          apple.angle += apple.spin * dt;
+          console.log(apple.angle)
+          ctx.rotate(apple.angle);
+          ctx.drawImage(appleTexture, -AppleSize / 2, -AppleSize / 2);
+          ctx.fillText(apple.number, -AppleSize / 2 + 27 - textWidth / 2, -AppleSize / 2 + 33);
+          ctx.restore();
         } else {
           apple.draw = false;
         }
