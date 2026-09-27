@@ -12,6 +12,8 @@
   height: auto;
   display: block;
   margin: 0 auto;
+  /* Block screen scrolling when touching canvas */
+  touch-action: none;
 }
 p {
   width: min(720px, 100%);

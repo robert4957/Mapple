@@ -80,14 +80,14 @@ function removeSelector() {
   // Check if fruit selection sums to 10
   checkCollision(true);
   selector.draw = false;
-  canvas.removeEventListener("mousemove", updateSelector);
-  canvas.removeEventListener("mouseup", removeSelector);
+  canvas.removeEventListener("pointermove", updateSelector);
+  canvas.removeEventListener("pointerup", removeSelector);
 }
 
-canvas.addEventListener("mousedown", () => {
+canvas.addEventListener("pointerdown", (e) => {
   if (inGame) {
-    canvas.addEventListener("mousemove", updateSelector);
-    canvas.addEventListener("mouseup", removeSelector);
+    canvas.addEventListener("pointermove", updateSelector);
+    canvas.addEventListener("pointerup", removeSelector);
   }
 });
 
