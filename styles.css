@@ -2,15 +2,21 @@
   box-sizing: border-box;
 }
 
+#viewport {
+  width: 100%;
+  overflow: auto;
+}
+
 #canvas {
-  width: 720px;
-  height: 470px;
+  width: min(720px, 100%);
+  height: auto;
   display: block;
   margin: 0 auto;
 }
 p {
-  width: 720px;
-  margin: 0 auto;
+  width: min(720px, 100%);
+  margin: 0 auto 15px auto;
+  color: black;
 }
 
 img {
@@ -23,10 +29,16 @@ img {
   display: flex;
   justify-content: center;
   gap: 20px;
+  flex-wrap: wrap;
 }
 
 div {
   color: gray;
+  /* font-size: 1vw; */
+}
+
+button {
+  /* font-size: 1vw; */
 }
 
 .selected {
