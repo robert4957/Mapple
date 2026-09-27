@@ -56,3 +56,7 @@ div {
 .selected {
   color: black;
 }
+
+input {
+  accent-color: rgb(0, 204, 102);
+}
