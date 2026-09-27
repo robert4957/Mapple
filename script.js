@@ -91,6 +91,15 @@ function checkCollision(remove) {
   const selectedApples = appleArr.flat().filter((apple) => apple.active && apple.xCollision >= xStart && apple.xCollision <= xEnd && apple.yCollision >= yStart && apple.yCollision <= yEnd);
   const sum = selectedApples.reduce((runningSum, apple) => runningSum + apple.number, 0);
 
+
+  appleArr.flat().forEach(apple => {
+    apple.selected = false;
+  });
+
+  selectedApples.forEach(apple => {
+    apple.selected = true;
+  });
+
   
   if (sum === 10) {
     if (remove) {
@@ -114,6 +123,9 @@ function checkCollision(remove) {
 function removeSelector() {
   // Check if fruit selection sums to 10
   checkCollision(true);
+  appleArr.flat().forEach(apple => {
+    apple.selected = false;
+  });
   selector.draw = false;
   canvas.removeEventListener("pointermove", updateSelector);
   document.removeEventListener("pointerup", removeSelector);
@@ -172,6 +184,7 @@ class Apple {
   constructor(number, xPos, yPos) {
     this.active = true;
     this.draw = true;
+    this.selected = false;
     this.number = number;
     this.xPos = xPos;
     this.yPos = yPos;
@@ -262,12 +275,14 @@ function draw(timestamp) {
 
   // Draw fruit grid
   const appleTexture = document.querySelector("#apple");
+  const appleTextureSelected = document.querySelector("#apple-selected");
   const inactiveFruit = [];
   for (let y = 0; y < 10; y++) {
     for (let x = 0; x < 17; x++) {
       const apple = appleArr[y][x]
       if (apple.active) {
-        ctx.drawImage(appleTexture, apple.xPos, apple.yPos);
+        const texture = apple.selected ? appleTextureSelected : appleTexture;
+        ctx.drawImage(texture, apple.xPos, apple.yPos);
         ctx.fillText(apple.number, apple.xPos + 27 - textWidth / 2, apple.yPos + 33); // Create good constants for this positioning later
       } else if (apple.draw) {
         inactiveFruit.push(apple);
@@ -284,7 +299,7 @@ function draw(timestamp) {
       ctx.translate(apple.xPos + AppleSize / 2, apple.yPos + AppleSize / 2);
       apple.angle += apple.spin * dt;
       ctx.rotate(apple.angle);
-      ctx.drawImage(appleTexture, -AppleSize / 2, -AppleSize / 2);
+      ctx.drawImage(appleTextureSelected, -AppleSize / 2, -AppleSize / 2);
       ctx.fillText(apple.number, -AppleSize / 2 + 27 - textWidth / 2, -AppleSize / 2 + 33);
       ctx.restore();
     } else {
@@ -309,7 +324,7 @@ function draw(timestamp) {
     ctx.fillRect(Math.round(selX) + 1, Math.round(selY) + 1, Math.round(selWidth) - 1 , Math.round(selHeight) - 1);
   }
 
-  // Draw green boarder after selector and apples
+  // Draw green border after selector and apples
   ctx.drawImage(document.querySelector("#foreground"), 0, 0);
 
   currentTime = Date.now();
