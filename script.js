@@ -5,6 +5,9 @@ const filter = 780;
 let boardSum = null;
 let score = 0;
 let gameMode = "filtered";
+const song = new Audio("assets/fruit_song.mp3");
+song.loop =- true;
+const clickSound = new Audio("assets/click.mp3");
 
 // Wait for images to load
 async function loadImages() {
@@ -30,7 +33,7 @@ let selector = {
 let inGame = false;
 
 function updateSelector(e) {
-  // Scaleing because css makes canvas half size
+  // Scaleing because css makes canvas display differently from internal size
   const scaleX = canvas.width / canvas.clientWidth;
   const scaleY = canvas.height / canvas.clientHeight;
   if (!selector.draw) {
@@ -61,6 +64,8 @@ function checkCollision(remove) {
   
   if (sum === 10) {
     if (remove) {
+      clickSound.currentTime = 0;
+      clickSound.play()
       let previous = null;
       selectedApples.forEach((apple) => {
         if (previous) {
@@ -110,11 +115,15 @@ function changeGameState(e) {
       inGame = true;
       startTime = Date.now();
       score = 0;
+      song.currentTime = 0;
+      console.log("playing song")
+      song.play();
     }
   } else {
     // 110, CanvasHeight - 55, 95, 40
     if (offsetX >= 110 && offsetX <= 110 + 95 && offsetY >= CanvasHeight - 55 && offsetY <= CanvasHeight - 55 + 40) {
       inGame = false;
+      song.pause();
     }
   }
 }
@@ -301,6 +310,11 @@ function draw(timestamp) {
   ctx.font = "bold 30px \"Times New Roman\""
   ctx.fillText("Reset", 122, CanvasHeight - 55 + 22,)
   ctx.font = "bold 36px \"Times New Roman\""
+
+  // End song if game is over
+  if (timePassed > 120000 && !song.paused) {
+    song.pause();
+  }
 
   requestAnimationFrame(draw);
 } 
