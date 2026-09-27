@@ -8,6 +8,7 @@ let gameMode = "filtered";
 const song = new Audio("assets/fruit_song.mp3");
 song.loop =- true;
 const clickSound = new Audio("assets/click.mp3");
+let volume = 100;
 
 // Wait for images to load
 async function loadImages() {
@@ -20,7 +21,36 @@ async function loadImages() {
 }
 
 await loadImages();
-const canvas = document.querySelector("canvas")
+const canvas = document.querySelector("canvas");
+
+// Sound control
+const muteMusicCheckbox = document.querySelector("#mute-music");
+muteMusicCheckbox.addEventListener("change", (e) => {
+  if(!e.target.checked) {
+    song.muted = true;
+  } else {
+    song.currentTime = 0;
+    song.muted = false;
+  }
+});
+
+const volumeSlider = document.querySelector("#volume");
+volumeSlider.addEventListener('input', (e) => {
+  volume = e.target.value;
+  console.log(volume);
+  song.volume = volume;
+  clickSound.volume = volume;
+});
+
+if (muteMusicCheckbox.checked) {
+  song.muted = false;;
+} else {
+  song.muted = true;
+}
+
+volume = volumeSlider.value;
+song.volume = volume;
+clickSound.volume = volume;
 
 let selector = {
   xStart: null,
@@ -124,6 +154,8 @@ function changeGameState(e) {
     if (offsetX >= 110 && offsetX <= 110 + 95 && offsetY >= CanvasHeight - 55 && offsetY <= CanvasHeight - 55 + 40) {
       inGame = false;
       song.pause();
+      clickSound.currentTime = 0;
+      clickSound.play();
     }
   }
 }

@@ -12,7 +12,16 @@
   <img src="assets/fruitbox apple.png" id="apple">
   <img src = "assets/foreground.png" id="foreground">
   <div id="viewport">
-    <p>Mapple</p>
+    <div id="above">
+      <p>Mapple</p>
+      <div id="sound-control">
+        <label for="mute-music">Music</label>
+        <input type="checkbox" id="mute-music" checked>
+        <label for="volume">Volume</label>
+        <input type="range" id="volume" min="0" max="1" value="1" step="0.01">
+        
+      </div>
+    </div>
     <canvas id="canvas" width="1440" height="940">Fruit box game.</canvas>
     <div class="button-container">
       <div id="filtered">Filtered</div>

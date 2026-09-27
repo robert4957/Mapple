@@ -15,9 +15,23 @@
   /* Block screen scrolling when touching canvas */
   touch-action: none;
 }
-p {
+#above {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   width: min(720px, 100%);
   margin: 0 auto 15px auto;
+  color: black;
+  flex-wrap: wrap;
+}
+
+#sound-control {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+label {
   color: black;
 }
 
@@ -36,10 +50,6 @@ img {
 
 div {
   color: gray;
-  /* font-size: 1vw; */
-}
-
-button {
   /* font-size: 1vw; */
 }
 
