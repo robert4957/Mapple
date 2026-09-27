@@ -251,6 +251,26 @@ function draw(timestamp) {
     }
   }
 
+  // Draw selector
+  if (selector.draw && currentTime - startTime <= 120000) {    
+    let [selX, selWidth] = (selector.xStart < selector.xEnd) 
+    ? [selector.xStart, selector.xEnd - selector.xStart] 
+    : [selector.xEnd, selector.xStart - selector.xEnd];
+
+    let [selY, selHeight] = (selector.yStart < selector.yEnd) 
+    ? [selector.yStart, selector.yEnd - selector.yStart] 
+    : [selector.yEnd, selector.yStart - selector.yEnd];
+    if (selWidth === 0 && selHeight !== 0) selWidth = 1;
+    if (selWidth !== 0 && selHeight === 0) selHeight = 1;
+    ctx.strokeStyle = "rgb(3, 132, 252)";
+    ctx.fillStyle = checkCollision() ? "rgb(255 0 0 / 40%)" : "rgb(255 180 0 / 30%)";
+    ctx.strokeRect(Math.round(selX) + 0.5, Math.round(selY) + 0.5, Math.round(selWidth), Math.round(selHeight));
+    ctx.fillRect(Math.round(selX) + 1, Math.round(selY) + 1, Math.round(selWidth) - 1 , Math.round(selHeight) - 1);
+  }
+
+  // Draw green boarder after selector and apples
+  ctx.drawImage(document.querySelector("#foreground"), 0, 0);
+
   currentTime = Date.now();
 
   // Draw score
@@ -282,27 +302,6 @@ function draw(timestamp) {
   ctx.fillText("Reset", 122, CanvasHeight - 55 + 22,)
   ctx.font = "bold 36px \"Times New Roman\""
 
-  
-
-  // Draw selector
-  if (selector.draw && currentTime - startTime <= 120000) {    
-    let [selX, selWidth] = (selector.xStart < selector.xEnd) 
-    ? [selector.xStart, selector.xEnd - selector.xStart] 
-    : [selector.xEnd, selector.xStart - selector.xEnd];
-
-    let [selY, selHeight] = (selector.yStart < selector.yEnd) 
-    ? [selector.yStart, selector.yEnd - selector.yStart] 
-    : [selector.yEnd, selector.yStart - selector.yEnd];
-    if (selWidth === 0 && selHeight !== 0) selWidth = 1;
-    if (selWidth !== 0 && selHeight === 0) selHeight = 1;
-    ctx.strokeStyle = "rgb(3, 132, 252)";
-    ctx.fillStyle = checkCollision() ? "rgb(255 0 0 / 40%)" : "rgb(255 180 0 / 30%)";
-    ctx.strokeRect(Math.round(selX) + 0.5, Math.round(selY) + 0.5, Math.round(selWidth), Math.round(selHeight));
-    ctx.fillRect(Math.round(selX) + 1, Math.round(selY) + 1, Math.round(selWidth) - 1 , Math.round(selHeight) - 1);
-  }
-
-  // Draw green boarder after everything else so it is on top
-  ctx.drawImage(document.querySelector("#foreground"), 0, 0);
   requestAnimationFrame(draw);
 } 
 
