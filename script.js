@@ -81,13 +81,13 @@ function removeSelector() {
   checkCollision(true);
   selector.draw = false;
   canvas.removeEventListener("pointermove", updateSelector);
-  canvas.removeEventListener("pointerup", removeSelector);
+  document.removeEventListener("pointerup", removeSelector);
 }
 
 canvas.addEventListener("pointerdown", (e) => {
   if (inGame) {
     canvas.addEventListener("pointermove", updateSelector);
-    canvas.addEventListener("pointerup", removeSelector);
+    document.addEventListener("pointerup", removeSelector); // On document so selector doesnt behave weirdly when leaving canvas
   }
 });
 
@@ -193,6 +193,7 @@ function draw(timestamp) {
   ctx.fillStyle = "white";
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(document.querySelector("#background"), 0, 0);
+  
 
   if (!inGame) {
     ctx.fillStyle = "rgb(0 204 102)";
@@ -300,8 +301,8 @@ function draw(timestamp) {
     ctx.fillRect(Math.round(selX) + 1, Math.round(selY) + 1, Math.round(selWidth) - 1 , Math.round(selHeight) - 1);
   }
 
- 
-
+  // Draw green boarder after everything else so it is on top
+  ctx.drawImage(document.querySelector("#foreground"), 0, 0);
   requestAnimationFrame(draw);
 } 
 
