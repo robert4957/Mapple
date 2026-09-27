@@ -45,7 +45,7 @@ function updateSelector(e) {
 function checkCollision(remove) {
   const timePassed = currentTime - startTime;
   if (timePassed >= 120000) {
-    false;
+    return false;
   }
   let [xStart, xEnd] = (selector.xStart < selector.xEnd)
   ? [selector.xStart, selector.xEnd]
@@ -241,7 +241,6 @@ function draw(timestamp) {
       ctx.save();
       ctx.translate(apple.xPos + AppleSize / 2, apple.yPos + AppleSize / 2);
       apple.angle += apple.spin * dt;
-      console.log(apple.angle)
       ctx.rotate(apple.angle);
       ctx.drawImage(appleTexture, -AppleSize / 2, -AppleSize / 2);
       ctx.fillText(apple.number, -AppleSize / 2 + 27 - textWidth / 2, -AppleSize / 2 + 33);
