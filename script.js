@@ -1,7 +1,9 @@
-const AppleSize = 64;
-const CanvasWidth = 1440;
-const CanvasHeight = 940;
-const filter = 780;
+const APPLE_SIZE = 64;
+const CANVAS_WIDTH = 1440;
+const CANVAS_HEIGHT  = 940;
+const FILTER = 780;
+const FRUIT_COLUMNS = 17;
+const FRUIT_ROWS = 10;
 let boardSum = null;
 let score = 0;
 let gameMode = "filtered";
@@ -144,8 +146,8 @@ function changeGameState(e) {
     const scaleY = canvas.height / canvas.clientHeight;
     ctx.font = "bold 64px \"Times New Roman\""
     const playWidth = ctx.measureText("Play").width;
-    const xPlayButton = CanvasWidth / 2 - playWidth / 2 - 20;
-    const yPlayButton  = CanvasHeight / 2 - 64 / 2 - 10;
+    const xPlayButton = CANVAS_WIDTH / 2 - playWidth / 2 - 20;
+    const yPlayButton  = CANVAS_HEIGHT  / 2 - 64 / 2 - 10;
     const xPlayButtonEnd = xPlayButton + playWidth + 40;
     const yPlaybuttonEnd = yPlayButton + 64 + 20;
     const offsetX = e.offsetX * scaleX;
@@ -162,8 +164,8 @@ function changeGameState(e) {
       song.play();
     }
   } else {
-    // 110, CanvasHeight - 55, 95, 40
-    if (offsetX >= 110 && offsetX <= 110 + 95 && offsetY >= CanvasHeight - 55 && offsetY <= CanvasHeight - 55 + 40) {
+    // Reset button clicked
+    if (offsetX >= 110 && offsetX <= 110 + 95 && offsetY >= CANVAS_HEIGHT  - 55 && offsetY <= CANVAS_HEIGHT  - 55 + 40) {
       inGame = false;
       song.pause();
       clickSound.currentTime = 0;
@@ -188,8 +190,8 @@ class Apple {
     this.number = number;
     this.xPos = xPos;
     this.yPos = yPos;
-    this.xCollision = xPos + AppleSize / 2;
-    this.yCollision = yPos + AppleSize / 2;
+    this.xCollision = xPos + APPLE_SIZE / 2;
+    this.yCollision = yPos + APPLE_SIZE / 2;
     this.xVel = Math.floor(Math.random() * 3001) - 1500;
     this.yVel = -Math.floor(Math.random() * 1001) - 500;
     this.spin = this.xVel / 100;
@@ -207,13 +209,13 @@ function createAppleArray() {
   while (true) {
     appleArr.length = 0;
     let sum = 0;
-    for (let y = 0; y < 10; y++) {
+    for (let y = 0; y < FRUIT_ROWS; y++) {
       const row = [];
-      for (let x = 0; x < 17; x++) {
+      for (let x = 0; x < FRUIT_COLUMNS; x++) {
         const xPos = StartPosition[0] + AppleSeperation * x;
         const yPos = StartPosition[1] + AppleSeperation * y;
         let number = Math.floor(Math.random() * 9) + 1;
-        if (y === 9 && x === 16) { // Last apple
+        if (y === FRUIT_ROWS - 1 && x === FRUIT_COLUMNS - 1) { // Last apple
           number = 10 - sum % 10;
           // console.log(sum);
         }
@@ -222,12 +224,12 @@ function createAppleArray() {
       }
       appleArr.push(row);
     }
-    if (appleArr[9][16].number !== 10) {
+    if (appleArr[FRUIT_ROWS - 1][FRUIT_COLUMNS - 1].number !== 10) {
       if (gameMode === "classic") {
         console.log(sum);
         boardSum = sum;
         break;
-      } else if (gameMode === "filtered" && sum <= filter) {
+      } else if (gameMode === "filtered" && sum <= FILTER) {
         console.log(sum);
         boardSum = sum;
         break;
@@ -254,19 +256,19 @@ function draw(timestamp) {
     ctx.font = "bold 64px \"Times New Roman\""
     const playWidth = ctx.measureText("Play").width;
     // PLAY BUTTON
-    const xPlayButton = CanvasWidth / 2 - playWidth / 2 - 20;
-    const yPlayButton  = CanvasHeight / 2 - 64 / 2 - 10;
+    const xPlayButton = CANVAS_WIDTH / 2 - playWidth / 2 - 20;
+    const yPlayButton  = CANVAS_HEIGHT  / 2 - 64 / 2 - 10;
     ctx.fillRect(xPlayButton, yPlayButton, playWidth + 40, 64 + 20);
     ctx.fillStyle = "white";
-    ctx.fillText("Play", CanvasWidth / 2 - playWidth / 2, CanvasHeight / 2);
+    ctx.fillText("Play", CANVAS_WIDTH / 2 - playWidth / 2, CANVAS_HEIGHT  / 2);
     ctx.font = "bold 36px \"Times New Roman\""
 
     // Draw reset button
     ctx.strokeStyle = "white";
-    ctx.strokeRect(110, CanvasHeight - 55, 95, 40);
+    ctx.strokeRect(110, CANVAS_HEIGHT  - 55, 95, 40);
     ctx.fillStyle = "white";
     ctx.font = "bold 30px \"Times New Roman\""
-    ctx.fillText("Reset", 122, CanvasHeight - 55 + 22,)
+    ctx.fillText("Reset", 122, CANVAS_HEIGHT  - 55 + 22,)
     ctx.font = "bold 36px \"Times New Roman\""
 
     requestAnimationFrame(draw);
@@ -277,13 +279,13 @@ function draw(timestamp) {
   const appleTexture = document.querySelector("#apple");
   const appleTextureSelected = document.querySelector("#apple-selected");
   const inactiveFruit = [];
-  for (let y = 0; y < 10; y++) {
-    for (let x = 0; x < 17; x++) {
+  for (let y = 0; y < FRUIT_ROWS; y++) {
+    for (let x = 0; x < FRUIT_COLUMNS; x++) {
       const apple = appleArr[y][x]
       if (apple.active) {
         const texture = apple.selected ? appleTextureSelected : appleTexture;
         ctx.drawImage(texture, apple.xPos, apple.yPos);
-        ctx.fillText(apple.number, apple.xPos + AppleSize / 2 - textWidth / 2, apple.yPos + AppleSize / 2 + 2); // Create good constants for this positioning later
+        ctx.fillText(apple.number, apple.xPos + APPLE_SIZE / 2 - textWidth / 2, apple.yPos + APPLE_SIZE / 2 + 2); // Create good constants for this positioning later
       } else if (apple.draw) {
         inactiveFruit.push(apple);
         apple.yVel += 6000 * dt;
@@ -294,13 +296,13 @@ function draw(timestamp) {
   }
   // Draw already selected fruit after so appears on top
   for (let apple of inactiveFruit) {
-    if (apple.yPos <= CanvasHeight) {
+    if (apple.yPos <= CANVAS_HEIGHT ) {
       ctx.save();
-      ctx.translate(apple.xPos + AppleSize / 2, apple.yPos + AppleSize / 2);
+      ctx.translate(apple.xPos + APPLE_SIZE / 2, apple.yPos + APPLE_SIZE / 2);
       apple.angle += apple.spin * dt;
       ctx.rotate(apple.angle);
-      ctx.drawImage(appleTextureSelected, -AppleSize / 2, -AppleSize / 2);
-      ctx.fillText(apple.number, -AppleSize / 2 + AppleSize / 2 - textWidth / 2, -AppleSize / 2 + AppleSize / 2 + 2);
+      ctx.drawImage(appleTextureSelected, -APPLE_SIZE / 2, -APPLE_SIZE / 2);
+      ctx.fillText(apple.number, -APPLE_SIZE / 2 + APPLE_SIZE / 2 - textWidth / 2, -APPLE_SIZE / 2 + APPLE_SIZE / 2 + 2);
       ctx.restore();
     } else {
       apple.draw = false;
@@ -334,7 +336,7 @@ function draw(timestamp) {
   ctx.fillStyle = "rgb(9 204 9)";
   ctx.lineWidth = 2;
   if (currentTime - startTime < 120000) {
-    ctx.fillText(`${score}`, CanvasWidth - 110 - scoreWidth / 2, 110); // 120 for original parity
+    ctx.fillText(`${score}`, CANVAS_WIDTH - 110 - scoreWidth / 2, 110); // 120 for original parity
   }
   ctx.direction = "ltr";
 
@@ -343,8 +345,8 @@ function draw(timestamp) {
   const timePassed = currentTime - startTime;
   ctx.strokeStyle = "rgb(9 204 9";
   if (timePassed < 120000) {
-    ctx.strokeRect(CanvasWidth - 120, 180, 18, 600);
-    ctx.fillRect(CanvasWidth - 119, 181 + (598 / 120000) * timePassed, 16, 598 - (598 / 120000) * timePassed);
+    ctx.strokeRect(CANVAS_WIDTH - 120, 180, 18, 600);
+    ctx.fillRect(CANVAS_WIDTH - 119, 181 + (598 / 120000) * timePassed, 16, 598 - (598 / 120000) * timePassed);
   } else {
     ctx.fillStyle = "white";
     ctx.fillText(`Score: ${score} - Board: ${boardSum}`, 122, 40);
@@ -352,10 +354,10 @@ function draw(timestamp) {
 
   // Draw reset button
   ctx.strokeStyle = "white";
-  ctx.strokeRect(110, CanvasHeight - 55, 95, 40);
+  ctx.strokeRect(110, CANVAS_HEIGHT  - 55, 95, 40);
   ctx.fillStyle = "white";
   ctx.font = "bold 30px \"Times New Roman\""
-  ctx.fillText("Reset", 122, CanvasHeight - 55 + 22,)
+  ctx.fillText("Reset", 122, CANVAS_HEIGHT  - 55 + 22,)
   ctx.font = "bold 36px \"Times New Roman\""
 
   // End song if game is over
