@@ -201,8 +201,11 @@ class Apple {
 
 // Create fruit
 const appleArr = [];
-const StartPosition = [130, 138];
-const AppleSeperation = 67;
+const AppleSeperation = APPLE_SIZE + 3;
+const StartPosition = [(CANVAS_WIDTH - AppleSeperation * FRUIT_COLUMNS) / 2, (CANVAS_HEIGHT - AppleSeperation * FRUIT_ROWS) / 2];
+
+
+
 
 function createAppleArray() {
   console.log(gameMode);
