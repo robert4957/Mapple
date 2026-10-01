@@ -1,4 +1,4 @@
-const AppleSize = 55;
+const AppleSize = 64;
 const CanvasWidth = 1440;
 const CanvasHeight = 940;
 const filter = 780;
@@ -283,7 +283,7 @@ function draw(timestamp) {
       if (apple.active) {
         const texture = apple.selected ? appleTextureSelected : appleTexture;
         ctx.drawImage(texture, apple.xPos, apple.yPos);
-        ctx.fillText(apple.number, apple.xPos + 27 - textWidth / 2, apple.yPos + 33); // Create good constants for this positioning later
+        ctx.fillText(apple.number, apple.xPos + AppleSize / 2 - textWidth / 2, apple.yPos + AppleSize / 2 + 2); // Create good constants for this positioning later
       } else if (apple.draw) {
         inactiveFruit.push(apple);
         apple.yVel += 6000 * dt;
@@ -300,7 +300,7 @@ function draw(timestamp) {
       apple.angle += apple.spin * dt;
       ctx.rotate(apple.angle);
       ctx.drawImage(appleTextureSelected, -AppleSize / 2, -AppleSize / 2);
-      ctx.fillText(apple.number, -AppleSize / 2 + 27 - textWidth / 2, -AppleSize / 2 + 33);
+      ctx.fillText(apple.number, -AppleSize / 2 + AppleSize / 2 - textWidth / 2, -AppleSize / 2 + AppleSize / 2 + 2);
       ctx.restore();
     } else {
       apple.draw = false;
