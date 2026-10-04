@@ -162,6 +162,8 @@ function changeGameState(e) {
       song.currentTime = 0;
       console.log("playing song")
       song.play();
+      scoreAccel = CANVAS_HEIGHT * 4;
+      scoreHeight = 0;
     }
   } else {
     // Reset button clicked
@@ -245,6 +247,12 @@ function createAppleArray() {
 let startTime = Date.now();
 let currentTime = Date.now();
 let previousTimestamp = null;
+const appleTexture = document.querySelector("#apple");
+const appleTextureSelected = document.querySelector("#apple-selected");
+let scoreAccel = CANVAS_HEIGHT * 4;
+let scoreHeight = 0;
+
+// Main game loop, vsync refresh using requestAnimationFrame
 function draw(timestamp) {
   if (!previousTimestamp) {previousTimestamp = timestamp;}
   let dt = (timestamp - previousTimestamp) / 1000;
@@ -273,14 +281,11 @@ function draw(timestamp) {
     ctx.font = "bold 30px tinos"
     ctx.fillText("Reset", 122, CANVAS_HEIGHT  - 55 + 22,)
     ctx.font = "bold 36px tinos"
-
     requestAnimationFrame(draw);
     return;
   }
 
   // Draw fruit grid
-  const appleTexture = document.querySelector("#apple");
-  const appleTextureSelected = document.querySelector("#apple-selected");
   const inactiveFruit = [];
   for (let y = 0; y < FRUIT_ROWS; y++) {
     for (let x = 0; x < FRUIT_COLUMNS; x++) {
@@ -341,7 +346,6 @@ function draw(timestamp) {
   if (currentTime - startTime < 120000) {
     ctx.fillText(`${score}`, CANVAS_WIDTH - 110 - scoreWidth / 2, 110); // 120 for original parity
   }
-  ctx.direction = "ltr";
 
   // Draw timer
   // 18 x 600
@@ -350,9 +354,6 @@ function draw(timestamp) {
   if (timePassed < 120000) {
     ctx.strokeRect(CANVAS_WIDTH - 120, 180, 18, 600);
     ctx.fillRect(CANVAS_WIDTH - 119, 181 + (598 / 120000) * timePassed, 16, 598 - (598 / 120000) * timePassed);
-  } else {
-    ctx.fillStyle = "white";
-    ctx.fillText(`Score: ${score} - Board: ${boardSum}`, 122, 40);
   }
 
   // Draw reset button
@@ -366,6 +367,35 @@ function draw(timestamp) {
   // End song if game is over
   if (timePassed > 120000 && !song.paused) {
     song.pause();
+  }
+
+  if (timePassed > 120000) {
+    ctx.imageSmoothingEnabled = false;
+    ctx.font = "bold 64px tinos";
+    ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 4;
+    ctx.shadowOffsetY = 4;
+    scoreAccel -= CANVAS_HEIGHT * 15 * dt;
+    scoreAccel = Math.max(scoreAccel, 800);
+    scoreHeight += scoreAccel * dt;
+    scoreHeight = Math.min(scoreHeight, CANVAS_HEIGHT / 2);
+    ctx.save();
+    ctx.translate(CANVAS_WIDTH / 2, scoreHeight);
+    ctx.scale(8, 8);
+    ctx.drawImage(appleTexture, -APPLE_SIZE / 2, -APPLE_SIZE / 2);
+    ctx.scale(1,1);
+    ctx.restore();
+    ctx.save();
+    ctx.translate(CANVAS_WIDTH / 2, scoreHeight);
+    const itsOverSize = ctx.measureText("It's over.").width;
+    const scoreSize = ctx.measureText(`Score: ${score}`).width;
+    ctx.fillText("It's over.", -itsOverSize / 2, -32);
+    ctx.fillText(`Score: ${score}`, -scoreSize / 2, 32);
+    ctx.restore();
+    ctx.shadowColor = "transparent"; 
+    ctx.font = "bold 36px tinos";
+    ctx.imageSmoothingEnabled = true;
   }
 
   requestAnimationFrame(draw);
