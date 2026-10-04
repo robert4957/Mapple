@@ -25,6 +25,105 @@ async function loadImages() {
 await loadImages();
 const canvas = document.querySelector("canvas");
 
+let totalCounts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+// Test new fruit generation
+for (let runs = 0; runs <= 1000; runs++) {
+  let fruitQueues = [[], [], [], [], [], [], [], [], [], []];
+let currArr = null;
+
+while (true) {
+  let num = Math.floor(Math.random() * 9) + 1;
+  for (let i = 10 - num - 1; i >= 0; i--) {
+    currArr = fruitQueues[i].pop();
+    if (currArr) {
+      currArr.push(num);
+      const sum = currArr.reduce((sum, curr) => sum + curr, 0);
+      fruitQueues[sum - 1].push(currArr);
+      currArr = null;
+      break;
+    } else if (i === 0) {
+      fruitQueues[num - 1].push([num]);
+    }
+  }
+  if (fruitQueues.slice(0, 9).flat(Infinity).length + fruitQueues.slice(0, 9).flat().length == 170 - fruitQueues.slice(9).flat(Infinity).length){
+    break;
+  }
+  if (fruitQueues.slice(0, 9).flat(Infinity).length + fruitQueues.slice(0, 9).flat().length > 170 - fruitQueues.slice(9).flat(Infinity).length) {
+    fruitQueues = [[], [], [], [], [], [], [], [], [], []];
+  }
+}
+
+let unpairedFruit = fruitQueues.slice(0,9);
+let pairs = fruitQueues.slice(9).flat();
+// console.log(pairs);
+for (let i = 0; i < unpairedFruit.length; i++) {
+  for (let j = 0; j < unpairedFruit[i].length; j++) {
+    unpairedFruit[i][j].push(10 - 1 - i);
+  }
+}
+unpairedFruit = unpairedFruit.flat()
+
+pairs = [...pairs, ...unpairedFruit];
+// console.log(pairs.flat());
+let counts = [[], [], [], [], [], [], [], [], [], []];
+for (let num of pairs.flat()) {
+  counts[num].push(num);
+}
+
+counts = counts.map(arr => arr.length);
+
+for (let i = 1; i < 10; i++) {
+  totalCounts[i] += counts[i];
+}
+}
+
+totalCounts = totalCounts.map((num) => num / 1000);
+console.log(totalCounts);
+
+totalCounts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+for (let runs = 0; runs < 1000; runs++) {
+  let apar = [];
+let sum = 0;
+while (true) {
+  let num = Math.floor(Math.random() * 9) + 1
+  apar.push(num);
+  sum += num;
+  if (apar.length === 169) {
+    num = 10 - sum % 10;
+    if (num == 10) {
+      apar.length = 0;
+      continue
+    } else {
+      sum += num;
+      apar.push(num);
+    }
+  }
+  if (apar.reduce((sum, curr) => sum + curr), 0 > 740) {
+    apar.length = 0;
+  }
+  if (apar.length === 170) {
+    break;
+  }
+}
+
+let counts = [[], [], [], [], [], [], [], [], [], []];
+
+for (let num of apar) {
+  counts[num].push(num);
+}
+
+counts = counts.map(arr => arr.length);
+
+for (let i = 1; i < 10; i++) {
+  totalCounts[i] += counts[i];
+}
+}
+
+totalCounts = totalCounts.map((num) => num / 1000);
+console.log(totalCounts);
+
 // Sound control
 const muteMusicCheckbox = document.querySelector("#mute-music");
 muteMusicCheckbox.addEventListener("change", (e) => {
