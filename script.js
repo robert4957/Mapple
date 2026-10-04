@@ -144,7 +144,7 @@ function changeGameState(e) {
   // Scaleing because css makes canvas half size
     const scaleX = canvas.width / canvas.clientWidth;
     const scaleY = canvas.height / canvas.clientHeight;
-    ctx.font = "bold 64px \"Times New Roman\""
+    ctx.font = "bold 64px tinos"
     const playWidth = ctx.measureText("Play").width;
     const xPlayButton = CANVAS_WIDTH / 2 - playWidth / 2 - 20;
     const yPlayButton  = CANVAS_HEIGHT  / 2 - 64 / 2 - 10;
@@ -152,7 +152,7 @@ function changeGameState(e) {
     const yPlaybuttonEnd = yPlayButton + 64 + 20;
     const offsetX = e.offsetX * scaleX;
     const offsetY = e.offsetY * scaleY
-    ctx.font = "bold 36px \"Times New Roman\"";
+    ctx.font = "bold 36px tinos";
   if (!inGame) {
     if (offsetX >= xPlayButton && offsetX <= xPlayButtonEnd && offsetY >= yPlayButton && offsetY <= yPlaybuttonEnd) {
       createAppleArray();
@@ -177,7 +177,7 @@ function changeGameState(e) {
 canvas.addEventListener("click", changeGameState);
 
 const ctx = canvas.getContext("2d");
-ctx.font = "bold 36px \"Times New Roman\""
+ctx.font = "bold 36px tinos"
 ctx.textBaseline = "middle";
 const measurement = ctx.measureText("9");
 const textWidth = measurement.width;
@@ -256,7 +256,7 @@ function draw(timestamp) {
 
   if (!inGame) {
     ctx.fillStyle = "rgb(0 204 102)";
-    ctx.font = "bold 64px \"Times New Roman\""
+    ctx.font = "bold 64px tinos"
     const playWidth = ctx.measureText("Play").width;
     // PLAY BUTTON
     const xPlayButton = CANVAS_WIDTH / 2 - playWidth / 2 - 20;
@@ -264,15 +264,15 @@ function draw(timestamp) {
     ctx.fillRect(xPlayButton, yPlayButton, playWidth + 40, 64 + 20);
     ctx.fillStyle = "white";
     ctx.fillText("Play", CANVAS_WIDTH / 2 - playWidth / 2, CANVAS_HEIGHT  / 2);
-    ctx.font = "bold 36px \"Times New Roman\""
+    ctx.font = "bold 36px tinos"
 
     // Draw reset button
     ctx.strokeStyle = "white";
     ctx.strokeRect(110, CANVAS_HEIGHT  - 55, 95, 40);
     ctx.fillStyle = "white";
-    ctx.font = "bold 30px \"Times New Roman\""
+    ctx.font = "bold 30px tinos"
     ctx.fillText("Reset", 122, CANVAS_HEIGHT  - 55 + 22,)
-    ctx.font = "bold 36px \"Times New Roman\""
+    ctx.font = "bold 36px tinos"
 
     requestAnimationFrame(draw);
     return;
@@ -359,9 +359,9 @@ function draw(timestamp) {
   ctx.strokeStyle = "white";
   ctx.strokeRect(110, CANVAS_HEIGHT  - 55, 95, 40);
   ctx.fillStyle = "white";
-  ctx.font = "bold 30px \"Times New Roman\""
+  ctx.font = "bold 30px tinos"
   ctx.fillText("Reset", 122, CANVAS_HEIGHT  - 55 + 22,)
-  ctx.font = "bold 36px \"Times New Roman\""
+  ctx.font = "bold 36px tinos"
 
   // End song if game is over
   if (timePassed > 120000 && !song.paused) {
