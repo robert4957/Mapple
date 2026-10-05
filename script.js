@@ -25,10 +25,9 @@ async function loadImages() {
 await loadImages();
 const canvas = document.querySelector("canvas");
 
-let sizes = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+let totalCounts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 // Test new fruit generation
-for (let i = 0; i < 100000; i++) {
 let fruitQueues = [[], [], [], [], [], [], [], [], [], []];
 let currArr = null;
 
@@ -65,24 +64,7 @@ for (let i = 0; i < unpairedFruit.length; i++) {
 unpairedFruit = unpairedFruit.flat()
 
 pairs = [...pairs, ...unpairedFruit];
-
-pairs.forEach((pair) => {
-  sizes[pair.length - 2] += 1;
-})
-}
-
-
-sizes = sizes.map(num => num / 100000);
-console.log(`2: ${sizes[0]}`);
-console.log(`3: ${sizes[1]}`);
-console.log(`4: ${sizes[2]}`);
-console.log(`5: ${sizes[3]}`);
-console.log(`6: ${sizes[4]}`);
-console.log(`7: ${sizes[5]}`);
-console.log(`8: ${sizes[6]}`);
-console.log(`9: ${sizes[7]}`);
-console.log(`10: ${sizes[8]}`);
-
+console.log(pairs);
 
 
 // Sound control
