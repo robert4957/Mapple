@@ -100,7 +100,7 @@ while (true) {
       apar.push(num);
     }
   }
-  if (apar.reduce((sum, curr) => sum + curr), 0 > 740) {
+  if (apar.reduce((sum, curr) => sum + curr, 0) > 760) {
     apar.length = 0;
   }
   if (apar.length === 170) {
