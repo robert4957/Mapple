@@ -1,6 +1,6 @@
 const APPLE_SIZE = 64;
 const CANVAS_WIDTH = 1440;
-const CANVAS_HEIGHT  = 940;
+const CANVAS_HEIGHT = 940;
 const FILTER = 780;
 const FRUIT_COLUMNS = 17;
 const FRUIT_ROWS = 10;
@@ -8,7 +8,7 @@ let boardSum = null;
 let score = 0;
 let gameMode = "filtered";
 const song = new Audio("assets/fruit_song.mp3");
-song.loop =- true;
+song.loop = - true;
 const clickSound = new Audio("assets/click.mp3");
 let volume = 100;
 
@@ -16,7 +16,7 @@ let volume = 100;
 async function loadImages() {
   await Promise.all(
     Array.from(document.images).map((image) => {
-      if (image.complete) {return Promise.resolve();}
+      if (image.complete) { return Promise.resolve(); }
       return new Promise((resolve) => image.addEventListener("load", resolve));
     }),
   );
@@ -25,52 +25,264 @@ async function loadImages() {
 await loadImages();
 const canvas = document.querySelector("canvas");
 
-let totalCounts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-// Test new fruit generation
-let fruitQueues = [[], [], [], [], [], [], [], [], [], []];
-let currArr = null;
+// New fruit generation
+function generateFruit() {
+  let fruitQueues = [[], [], [], [], [], [], [], [], [], []];
+  let currArr = null;
 
-while (true) {
-  let num = Math.floor(Math.random() * 9) + 1;
-  for (let i = 10 - num - 1; i >= 0; i--) {
-    currArr = fruitQueues[i].pop();
-    if (currArr) {
-      currArr.push(num);
-      const sum = currArr.reduce((sum, curr) => sum + curr, 0);
-      fruitQueues[sum - 1].push(currArr);
-      currArr = null;
+  while (true) {
+    let num = Math.floor(Math.random() * 9) + 1;
+    for (let i = 10 - num - 1; i >= 0; i--) {
+      currArr = fruitQueues[i].pop();
+      if (currArr) {
+        currArr.push(num);
+        const sum = currArr.reduce((sum, curr) => sum + curr, 0);
+        fruitQueues[sum - 1].push(currArr);
+        currArr = null;
+        break;
+      } else if (i === 0) {
+        fruitQueues[num - 1].push([num]);
+        break
+      }
+    }
+    if (fruitQueues.slice(0, 9).flat(Infinity).length + fruitQueues.slice(0, 9).flat().length == 170 - fruitQueues.slice(9).flat(Infinity).length) {
       break;
-    } else if (i === 0) {
-      fruitQueues[num - 1].push([num]);
-      break
+    }
+    if (fruitQueues.slice(0, 9).flat(Infinity).length + fruitQueues.slice(0, 9).flat().length > 170 - fruitQueues.slice(9).flat(Infinity).length) {
+      fruitQueues = [[], [], [], [], [], [], [], [], [], []];
     }
   }
-  if (fruitQueues.slice(0, 9).flat(Infinity).length + fruitQueues.slice(0, 9).flat().length == 170 - fruitQueues.slice(9).flat(Infinity).length){
-    break;
+
+  let unpairedFruit = fruitQueues.slice(0, 9);
+  let pairs = fruitQueues.slice(9).flat();
+  for (let i = 0; i < unpairedFruit.length; i++) {
+    for (let j = 0; j < unpairedFruit[i].length; j++) {
+      unpairedFruit[i][j].push(10 - 1 - i);
+    }
   }
-  if (fruitQueues.slice(0, 9).flat(Infinity).length + fruitQueues.slice(0, 9).flat().length > 170 - fruitQueues.slice(9).flat(Infinity).length) {
-    fruitQueues = [[], [], [], [], [], [], [], [], [], []];
+  unpairedFruit = unpairedFruit.flat()
+
+  pairs = [...pairs, ...unpairedFruit];
+  return pairs;
+}
+
+let pairs = generateFruit();
+
+// console.log(pairs);
+
+class PlacementFruit {
+  constructor(number, zone) {
+    this.number = number;
+    this.zone = zone;
   }
 }
 
-let unpairedFruit = fruitQueues.slice(0,9);
-let pairs = fruitQueues.slice(9).flat();
-for (let i = 0; i < unpairedFruit.length; i++) {
-  for (let j = 0; j < unpairedFruit[i].length; j++) {
-    unpairedFruit[i][j].push(10 - 1 - i);
+class Zone {
+  constructor(minX, maxX, minY, maxY) {
+    this.minX = minX;
+    this.maxX = maxX;
+    this.minY = minY;
+    this.maxY = maxY;
   }
 }
-unpairedFruit = unpairedFruit.flat()
 
-pairs = [...pairs, ...unpairedFruit];
+let board = [];
+let placements = [];
+
+for (let y = 0; y < FRUIT_ROWS; y++) {
+  const row = [];
+  for (let x = 0; x < FRUIT_COLUMNS; x++) {
+    row.push(null);
+    placements.push([y, x]);
+  }
+  board.push(row);
+}
+
+// console.log(board);
+// console.log(placements);
+
+pairs.sort((a,b) => a.length - b.length);
+
+let boardCopy = structuredClone(board);
+let placementsCopy = structuredClone(placements);
+let pairsCopy = structuredClone(pairs);
+let counter = 0;
+// let minLength = Infinity
+while (pairs.length > 0) {
+  let pair = pairs.pop();
+  let alreadyPlaced = getPlacements(board, placements.slice(), pair.slice(), [], structuredClone(placements));
+  if (alreadyPlaced) {
+    let [minX, maxX, minY, maxY] = [Infinity, -Infinity, Infinity, -Infinity];
+    for (let [y, x] of alreadyPlaced) {
+      minX = Math.min(minX, x);
+      maxX = Math.max(maxX, x);
+      minY = Math.min(minY, y);
+      maxY = Math.max(maxY, y);
+    }
+    let zone = new Zone(minX, maxX, minY, maxY);
+    for (let [y, x] of alreadyPlaced) {
+      let number = pair.pop();
+      board[y][x] = new PlacementFruit(number, zone);
+      for (let i = 0; i < placements.length; i++) {
+        let [placementY, placementX] = placements[i];
+        if (y === placementY && x === placementX) {
+          placements.splice(i, 1);
+          i--;
+        }
+      }
+    }
+  } else {
+    if (counter > 0) {
+      counter--;
+      minLength = Math.min(minLength, placements.length)
+      board = boardCopy;
+      placements = placementsCopy;
+      pairs = pairsCopy;
+      boardCopy = structuredClone(board);
+      placementsCopy = structuredClone(placements);
+      pairsCopy = structuredClone(pairs);
+    } else {
+      break;
+    }
+  }
+}
+
+console.log(board);
+console.log(placements);
 console.log(pairs);
+// console.log(minLength);
 
+function getPlacements(board, placements, pair, alreadyPlaced, fullPlacements) {
+  if (pair.length === 0) {
+    return alreadyPlaced
+  }
+  if (placements.length === 0) {
+    return null;
+  }
+  pair.pop();
+  while (placements.length > 0) {
+    let randomIndex = Math.floor(Math.random() * placements.length);
+    let placement = placements[randomIndex];
+    alreadyPlaced.push(placement);
+    let [minX, maxX, minY, maxY] = [Infinity, -Infinity, Infinity, -Infinity];
+    for (let [y, x] of alreadyPlaced) {
+      minX = Math.min(minX, x);
+      maxX = Math.max(maxX, x);
+      minY = Math.min(minY, y);
+      maxY = Math.max(maxY, y);
+    }
+    let found = true;
+    outer: for (let y = minY; y <= maxY; y++) {
+      for (let x = minX; x <= maxX; x++) {
+        let check = board[y][x]
+        if (check) {
+          let zone = check.zone;
+          for (let [y, x] of alreadyPlaced) {
+            if ((y >= zone.minY && y <= zone.maxY) && (x >= zone.minX && x <= zone.maxX)) {
+              found = false;
+              break outer;
+            }
+          }
+        }
+      }
+    }
+    placements.splice(randomIndex, 1);
+    if (found) {
+      let testBoard = structuredClone(board);
+      let testPlacements = structuredClone(fullPlacements);
+      for (let [y, x] of alreadyPlaced) {
+        for (let i = 0; i < testPlacements.length; i++) {
+          let [placementY, placementX] = testPlacements[i];
+          if (y === placementY && x === placementX) {
+            testPlacements.splice(i, 1);
+            i--;
+          }
+        }
+      }
+      let [minX, maxX, minY, maxY] = [Infinity, -Infinity, Infinity, -Infinity];
+      for (let [y, x] of alreadyPlaced) {
+        minX = Math.min(minX, x);
+        maxX = Math.max(maxX, x);
+        minY = Math.min(minY, y);
+        maxY = Math.max(maxY, y);
+      }
+      let zone = new Zone(minX, maxX, minY, maxY);
+      for (let [y, x] of alreadyPlaced) {
+        testBoard[y][x] = new PlacementFruit(5, zone);
+      }
+      
+      let allPairs = true;
+      let indexSet = new Set();
+      let takenIndexSet = new Set();
+      for (let i = 0; i < testPlacements.length; i++) {
+        let pairCount = 0;
+        let firstPair;
+        // if (indexSet.has(i)) {
+        //   continue;
+        // }
+        let [y, x] = testPlacements[i];
+        for (let j = 0; j < testPlacements.length; j++) {
+          if (takenIndexSet.has(j) || i === j) {
+            continue;
+          }
+          let [compareY, compareX] = testPlacements[j];
+          let minX = Math.min(x, compareX);
+          let maxX = Math.max(x, compareX);
+          let minY = Math.min(y, compareY);
+          let maxY = Math.min(y, compareY);
+          let found = true;
+          outer: for (let y = minY; y <= maxY; y++) {
+            for (let x = minX; x <= maxX; x++) {
+              let check = testBoard[y][x]
+              if (check) {
+                let zone = check.zone;
+                for (let [y, x] of alreadyPlaced) {
+                  if ((y >= zone.minY && y <= zone.maxY) && (x >= zone.minX && x <= zone.maxX)) {
+                    found = false;
+                    break outer;
+                  }
+                }
+              }
+            }
+          }
+          if (found) {
+            indexSet.add(j)
+            pairCount++;
+            if (pairCount === 1) {
+              firstPair = j;
+            }
+          }
+        }
+        let noMatches = pairCount === 0;
+        let onlyOnePair = pairCount === 1;
+        if (noMatches) {
+          allPairs = false;
+          break;
+        }
+        if (onlyOnePair) {
+          takenIndexSet.add(firstPair);
+        }
+      }
+
+      if (allPairs) {
+        let toReturn = getPlacements(board, structuredClone(placements), pair.slice(), alreadyPlaced.slice(), fullPlacements)
+        if (toReturn) {
+          return toReturn;
+        }
+      }
+    }
+    if (placements.length === 0) {
+      return null;
+    }
+    alreadyPlaced.pop();
+  }
+}
 
 // Sound control
 const muteMusicCheckbox = document.querySelector("#mute-music");
 muteMusicCheckbox.addEventListener("change", (e) => {
-  if(!e.target.checked) {
+  if (!e.target.checked) {
     song.muted = true;
   } else {
     song.currentTime = 0;
@@ -125,12 +337,12 @@ function checkCollision(remove) {
     return false;
   }
   let [xStart, xEnd] = (selector.xStart < selector.xEnd)
-  ? [selector.xStart, selector.xEnd]
-  : [selector.xEnd, selector.xStart];
+    ? [selector.xStart, selector.xEnd]
+    : [selector.xEnd, selector.xStart];
 
   let [yStart, yEnd] = (selector.yStart < selector.yEnd)
-  ? [selector.yStart, selector.yEnd]
-  : [selector.yEnd, selector.yStart];
+    ? [selector.yStart, selector.yEnd]
+    : [selector.yEnd, selector.yStart];
 
   const selectedApples = appleArr.flat().filter((apple) => apple.active && apple.xCollision >= xStart && apple.xCollision <= xEnd && apple.yCollision >= yStart && apple.yCollision <= yEnd);
   const sum = selectedApples.reduce((runningSum, apple) => runningSum + apple.number, 0);
@@ -144,7 +356,7 @@ function checkCollision(remove) {
     apple.selected = true;
   });
 
-  
+
   if (sum === 10) {
     if (remove) {
       clickSound.currentTime = 0;
@@ -184,17 +396,17 @@ canvas.addEventListener("pointerdown", (e) => {
 
 function changeGameState(e) {
   // Scaleing because css makes canvas half size
-    const scaleX = canvas.width / canvas.clientWidth;
-    const scaleY = canvas.height / canvas.clientHeight;
-    ctx.font = "bold 64px tinos"
-    const playWidth = ctx.measureText("Play").width;
-    const xPlayButton = CANVAS_WIDTH / 2 - playWidth / 2 - 20;
-    const yPlayButton  = CANVAS_HEIGHT  / 2 - 64 / 2 - 10;
-    const xPlayButtonEnd = xPlayButton + playWidth + 40;
-    const yPlaybuttonEnd = yPlayButton + 64 + 20;
-    const offsetX = e.offsetX * scaleX;
-    const offsetY = e.offsetY * scaleY
-    ctx.font = "bold 36px tinos";
+  const scaleX = canvas.width / canvas.clientWidth;
+  const scaleY = canvas.height / canvas.clientHeight;
+  ctx.font = "bold 64px tinos"
+  const playWidth = ctx.measureText("Play").width;
+  const xPlayButton = CANVAS_WIDTH / 2 - playWidth / 2 - 20;
+  const yPlayButton = CANVAS_HEIGHT / 2 - 64 / 2 - 10;
+  const xPlayButtonEnd = xPlayButton + playWidth + 40;
+  const yPlaybuttonEnd = yPlayButton + 64 + 20;
+  const offsetX = e.offsetX * scaleX;
+  const offsetY = e.offsetY * scaleY
+  ctx.font = "bold 36px tinos";
   if (!inGame) {
     if (offsetX >= xPlayButton && offsetX <= xPlayButtonEnd && offsetY >= yPlayButton && offsetY <= yPlaybuttonEnd) {
       createAppleArray();
@@ -209,7 +421,7 @@ function changeGameState(e) {
     }
   } else {
     // Reset button clicked
-    if (offsetX >= 110 && offsetX <= 110 + 95 && offsetY >= CANVAS_HEIGHT  - 55 && offsetY <= CANVAS_HEIGHT  - 55 + 40) {
+    if (offsetX >= 110 && offsetX <= 110 + 95 && offsetY >= CANVAS_HEIGHT - 55 && offsetY <= CANVAS_HEIGHT - 55 + 40) {
       inGame = false;
       song.pause();
       clickSound.currentTime = 0;
@@ -296,13 +508,13 @@ let scoreHeight = 0;
 
 // Main game loop, vsync refresh using requestAnimationFrame
 function draw(timestamp) {
-  if (!previousTimestamp) {previousTimestamp = timestamp;}
+  if (!previousTimestamp) { previousTimestamp = timestamp; }
   let dt = (timestamp - previousTimestamp) / 1000;
   previousTimestamp = timestamp;
   ctx.fillStyle = "white";
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(document.querySelector("#background"), 0, 0);
-  
+
 
   if (!inGame) {
     ctx.fillStyle = "rgb(0 204 102)";
@@ -310,18 +522,18 @@ function draw(timestamp) {
     const playWidth = ctx.measureText("Play").width;
     // PLAY BUTTON
     const xPlayButton = CANVAS_WIDTH / 2 - playWidth / 2 - 20;
-    const yPlayButton  = CANVAS_HEIGHT  / 2 - 64 / 2 - 10;
+    const yPlayButton = CANVAS_HEIGHT / 2 - 64 / 2 - 10;
     ctx.fillRect(xPlayButton, yPlayButton, playWidth + 40, 64 + 20);
     ctx.fillStyle = "white";
-    ctx.fillText("Play", CANVAS_WIDTH / 2 - playWidth / 2, CANVAS_HEIGHT  / 2);
+    ctx.fillText("Play", CANVAS_WIDTH / 2 - playWidth / 2, CANVAS_HEIGHT / 2);
     ctx.font = "bold 36px tinos"
 
     // Draw reset button
     ctx.strokeStyle = "white";
-    ctx.strokeRect(110, CANVAS_HEIGHT  - 55, 95, 40);
+    ctx.strokeRect(110, CANVAS_HEIGHT - 55, 95, 40);
     ctx.fillStyle = "white";
     ctx.font = "bold 30px tinos"
-    ctx.fillText("Reset", 122, CANVAS_HEIGHT  - 55 + 22,)
+    ctx.fillText("Reset", 122, CANVAS_HEIGHT - 55 + 22,)
     ctx.font = "bold 36px tinos"
     requestAnimationFrame(draw);
     return;
@@ -346,7 +558,7 @@ function draw(timestamp) {
   }
   // Draw already selected fruit after so appears on top
   for (let apple of inactiveFruit) {
-    if (apple.yPos <= CANVAS_HEIGHT ) {
+    if (apple.yPos <= CANVAS_HEIGHT) {
       ctx.save();
       ctx.translate(apple.xPos + APPLE_SIZE / 2, apple.yPos + APPLE_SIZE / 2);
       apple.angle += apple.spin * dt;
@@ -360,20 +572,20 @@ function draw(timestamp) {
   }
 
   // Draw selector
-  if (selector.draw && currentTime - startTime <= 120000) {    
-    let [selX, selWidth] = (selector.xStart < selector.xEnd) 
-    ? [selector.xStart, selector.xEnd - selector.xStart] 
-    : [selector.xEnd, selector.xStart - selector.xEnd];
+  if (selector.draw && currentTime - startTime <= 120000) {
+    let [selX, selWidth] = (selector.xStart < selector.xEnd)
+      ? [selector.xStart, selector.xEnd - selector.xStart]
+      : [selector.xEnd, selector.xStart - selector.xEnd];
 
-    let [selY, selHeight] = (selector.yStart < selector.yEnd) 
-    ? [selector.yStart, selector.yEnd - selector.yStart] 
-    : [selector.yEnd, selector.yStart - selector.yEnd];
+    let [selY, selHeight] = (selector.yStart < selector.yEnd)
+      ? [selector.yStart, selector.yEnd - selector.yStart]
+      : [selector.yEnd, selector.yStart - selector.yEnd];
     if (selWidth === 0 && selHeight !== 0) selWidth = 1;
     if (selWidth !== 0 && selHeight === 0) selHeight = 1;
     ctx.strokeStyle = "rgb(3, 132, 252)";
     ctx.fillStyle = checkCollision() ? "rgb(255 0 0 / 40%)" : "rgb(255 180 0 / 30%)";
     ctx.strokeRect(Math.round(selX) + 0.5, Math.round(selY) + 0.5, Math.round(selWidth), Math.round(selHeight));
-    ctx.fillRect(Math.round(selX) + 1, Math.round(selY) + 1, Math.round(selWidth) - 1 , Math.round(selHeight) - 1);
+    ctx.fillRect(Math.round(selX) + 1, Math.round(selY) + 1, Math.round(selWidth) - 1, Math.round(selHeight) - 1);
   }
 
   // Draw green border after selector and apples
@@ -400,10 +612,10 @@ function draw(timestamp) {
 
   // Draw reset button
   ctx.strokeStyle = "white";
-  ctx.strokeRect(110, CANVAS_HEIGHT  - 55, 95, 40);
+  ctx.strokeRect(110, CANVAS_HEIGHT - 55, 95, 40);
   ctx.fillStyle = "white";
   ctx.font = "bold 30px tinos"
-  ctx.fillText("Reset", 122, CANVAS_HEIGHT  - 55 + 22,)
+  ctx.fillText("Reset", 122, CANVAS_HEIGHT - 55 + 22,)
   ctx.font = "bold 36px tinos"
 
   // End song if game is over
@@ -426,7 +638,7 @@ function draw(timestamp) {
     ctx.translate(CANVAS_WIDTH / 2, scoreHeight);
     ctx.scale(8, 8);
     ctx.drawImage(appleTexture, -APPLE_SIZE / 2, -APPLE_SIZE / 2);
-    ctx.scale(1,1);
+    ctx.scale(1, 1);
     ctx.restore();
     ctx.save();
     ctx.translate(CANVAS_WIDTH / 2, scoreHeight);
@@ -435,13 +647,13 @@ function draw(timestamp) {
     ctx.fillText("It's over.", -itsOverSize / 2, -32);
     ctx.fillText(`Score: ${score}`, -scoreSize / 2, 32);
     ctx.restore();
-    ctx.shadowColor = "transparent"; 
+    ctx.shadowColor = "transparent";
     ctx.font = "bold 36px tinos";
     ctx.imageSmoothingEnabled = true;
   }
 
   requestAnimationFrame(draw);
-} 
+}
 
 requestAnimationFrame(draw);
 
@@ -466,4 +678,3 @@ function switchMode() {
 }
 
 button.addEventListener("click", switchMode);
-console.log(`Current mode is ${gameMode}`);
